@@ -1,57 +1,123 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Telegram Mini App</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Guilty Work</title>
   <style>
     body {
-      font-family: sans-serif;
-      padding: 20px;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
     }
-    h1 {
-      color: #2a8ddc;
+
+    .logo {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .logo img {
+      width: 100px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+
+    .logo-title {
+      font-size: 18px;
+      color: #444;
+      font-weight: bold;
+    }
+
+    .btn {
+      width: 240px;
+      padding: 14px 20px;
+      margin: 10px 0;
+      background-color: #55b3e0;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      user-select: none;
+    }
+
+    .btn:hover {
+      background-color: #3499c4;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 14px;
+      color: green;
+      text-align: center;
+      min-height: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Добро пожаловать!</h1>
-  <p id="status">Загрузка...</p>
+
+  <div class="logo">
+    <img src="https://via.placeholder.com/100x100.png?text=Logo" alt="Logo" />
+    <div class="logo-title">Guilty Work</div>
+  </div>
+
+  <button class="btn" id="btn-register">Регистрация</button>
+  <button class="btn" id="btn-search-freelancer">Поиск исполнителя</button>
+  <button class="btn" id="btn-find-order">Найти заказ</button>
+
+  <div id="status"></div>
 
   <script>
-    window.onload = function () {
-      const tg = window.Telegram.WebApp;
-      tg.expand();
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-      const user = tg.initDataUnsafe?.user;
+    const user = tg.initDataUnsafe?.user || null;
+    const statusDiv = document.getElementById('status');
 
+    function sendAction(action) {
       if (!user) {
-        document.getElementById("status").innerText = "Ошибка: не удалось получить данные Telegram.";
+        statusDiv.textContent = "Ошибка: пользователь не найден";
         return;
       }
 
-      // Отправляем запрос на backend (ВСТАВЬ СВОЙ NGROK URL НИЖЕ)
-      fetch("https://2c02-190-2-155-231.ngrok-free.app", {
+      const payload = {
+        telegram_id: user.id,
+        first_name: user.first_name,
+        username: user.username,
+        action: action
+      };
+
+      statusDiv.textContent = "Отправка...";
+
+      fetch("https://bdae-190-2-155-231.ngrok-free.app/actions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          telegram_id: user.id,
-          first_name: user.first_name,
-          username: user.username
-        })
+        body: JSON.stringify(payload)
       })
-      .then(response => response.json())
+      .then(res => res.json())
       .then(data => {
-        console.log("Ответ от сервера:", data);
-        document.getElementById("status").innerHTML =
-          `✅ Вы зарегистрированы как <b>${user.first_name}</b>`;
+        statusDiv.textContent = `Ответ сервера: ${data.message}`;
       })
-      .catch(error => {
-        console.error("Ошибка:", error);
-        document.getElementById("status").innerText = "❌ Ошибка при регистрации.";
+      .catch(err => {
+        console.error(err);
+        statusDiv.textContent = "Ошибка связи с сервером";
       });
-    };
+    }
+
+    document.getElementById('btn-register').onclick = () => sendAction('register');
+    document.getElementById('btn-search-freelancer').onclick = () => sendAction('search_freelancer');
+    document.getElementById('btn-find-order').onclick = () => sendAction('find_order');
   </script>
+
 </body>
 </html>
