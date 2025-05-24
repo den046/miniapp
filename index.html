@@ -1,0 +1,18 @@
+<!-- mini-app/index.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Telegram Mini App</title>
+  <script>
+    window.onload = function () {
+      const tg = window.Telegram.WebApp;
+      tg.expand();
+      document.body.innerHTML += `<p>Привет, ${tg.initDataUnsafe?.user?.first_name || "гость"}!</p>`;
+    }
+  </script>
+</head>
+<body>
+  <h1>Добро пожаловать во фриланс-площадку!</h1>
+</body>
+</html>
